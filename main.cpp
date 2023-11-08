@@ -97,9 +97,210 @@ bool vogel_is_applicable()
     return true;
 }
 
-void run_vogel(vector<int> supply, vector<int> demand)
+vector<int> delete_element_from_vector(vector<int> v, int x)
 {
-    
+    vector<int> res;
+    for(int i = 0; i<int(v.size()); i++)
+    {
+        if(i == x)
+            continue;
+        res.pb(v[i]);
+    }
+
+    return res;
+}
+
+vector<vector<int>> delete_row_from_matrix(vector<vector<int>> mat, int n)
+{
+    vector<vector<int>> res;
+    for(int i = 0; i<int(mat.size()); i++)
+    {
+        if(i == n)
+            continue;
+
+        vector<int> temp;
+        for(int j = 0; j<int(mat[0].size()); j++)
+            temp.pb(mat[i][j]);
+        
+        res.pb(temp);
+    }
+
+    return res;
+}
+
+
+vector<vector<int>> delete_column_from_matrix(vector<vector<int>> mat, int m)
+{
+    vector<vector<int>> res;
+    for(int i = 0; i<int(mat.size()); i++)
+    {
+        vector<int> temp;
+        
+        for(int j = 0; j<int(mat[0].size()); j++)
+        {
+            if(j == m)
+                continue;
+
+            temp.pb(C[i][j]);
+        }
+
+        res.pb(temp);
+    }
+
+    return res;
+}
+
+void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
+{
+    int res = 0;
+
+    while(!(int(C.size()) <= 1 && int(C[0].size()) <= 1))
+    {
+        int n = int(C.size());
+        int m = int(C[0].size());
+        cout << "The current cost coefficients are:" << endl;
+        for(int i = 0; i<n; i++)
+        {
+            for(int j = 0; j<m; j++)
+            {
+                cout << C[i][j] << ' ';
+            }
+            cout << endl;
+        }
+
+        vector<int> supply_penalty(n, 0);
+        vector<int> demand_penalty(m, 0);
+
+        for(int i = 0; i<n; i++)
+        {
+
+            int first_minimum = 1e9, second_minimum = 1e9+1;
+
+            for(int j = 0; j<m; j++)
+            {
+                if(C[i][j] < first_minimum)
+                    first_minimum = C[i][j];
+            }
+
+            for(int j = 0; j<m; j++)
+            {
+                if(C[i][j] < second_minimum && C[i][j] > first_minimum)
+                    second_minimum = C[i][j];
+            }
+
+            supply_penalty[i] = abs(first_minimum-second_minimum);
+        }
+
+        for(int j = 0; j<m; j++)
+        {
+            int first_minimum = 1e9, second_minimum = 1e9+1;
+
+            for(int i = 0; i<n; i++)
+            {
+                if(C[i][j] < first_minimum)
+                    first_minimum = C[i][j];
+            }
+
+            for(int i = 0; i<n; i++)
+            {
+                if(C[i][j] < second_minimum && C[i][j] > first_minimum)
+                    second_minimum = C[i][j];
+            }
+
+            demand_penalty[j] = abs(first_minimum-second_minimum);
+        }
+
+        cout << "The supply penalties are:" << endl;
+        for(int i = 0; i<n; i++)
+            cout << supply_penalty[i] << ' ';
+        cout << endl;
+
+        cout << "The demand penalties are:" << endl;
+        for(int j = 0; j<m; j++)
+            cout << demand_penalty[j] << ' ';
+        cout << endl;
+        cout << endl;
+
+        int maximum_supply_penalty = 0; // the index in the vector supply_penalty
+        int maximum_demand_penalty = 0; // the index in the vector demand_penalty
+
+        for(int i = 1; i<n; i++)
+        {
+            if(supply_penalty[i] > maximum_supply_penalty)
+                maximum_supply_penalty = i;
+        }
+
+        for(int j = 1; j<m; j++)
+        {
+            if(demand_penalty[j] > maximum_demand_penalty)
+                maximum_demand_penalty = j;
+        }
+
+        int mini_x, mini_y;
+        if (supply_penalty[maximum_supply_penalty] >= demand_penalty[maximum_demand_penalty]) // the maximum penalty corresponds to the supplies (rows)
+        {
+            mini_x = maximum_supply_penalty;
+            mini_y = 0;
+            for(int j = 0; j<m; j++)
+            {
+                if(C[mini_x][j] < C[mini_x][mini_y])
+                    mini_y = j;
+            }
+        }
+        else // the maximum penalty corresponds to the demands (columns)
+        {
+            mini_y = maximum_demand_penalty;
+            mini_x = 0;
+            for(int i = 0; i<n; i++)
+            {
+                if(C[i][mini_y] < C[mini_x][mini_y])
+                    mini_x = i;
+            }
+        }
+
+        cout << "We add " << C[mini_x][mini_y] << " * min(" << supply[mini_x] << ", " << demand[mini_y] << ')' << endl;
+        res += C[mini_x][mini_y] * min(supply[mini_x], demand[mini_y]); 
+
+        if(supply[mini_x] < demand[mini_y])
+        {
+            print_supply_and_demand(supply[mini_x], demand[mini_y]);
+            demand[mini_y] -= supply[mini_x];
+            supply[mini_x] = 0;
+            
+            S = delete_element_from_vector(S, mini_x);
+            C = delete_row_from_matrix(C, mini_x);
+        }
+        else if(supply[mini_x] > demand[mini_y])
+        {
+            print_supply_and_demand(supply[mini_x], demand[mini_y]);
+            supply[mini_x] -= demand[mini_y];
+            demand[mini_y] = 0;
+            
+            D = delete_element_from_vector(D, mini_y);
+            C = delete_column_from_matrix(C, mini_y);
+        }
+        else
+        {
+            print_supply_and_demand(supply[mini_x], demand[mini_y]);
+            supply[mini_x] = 0;
+            demand[mini_y] = 0;
+            
+            S = delete_element_from_vector(S, mini_x);
+            C = delete_row_from_matrix(C, mini_x);
+            D = delete_element_from_vector(D, mini_y);
+            C = delete_column_from_matrix(C, mini_y);
+        }
+
+        cout << endl;
+    }
+
+    cout << "Final addition:" << endl;
+    cout << "We add " << C[0][0] << " * min(" << supply[0] << ", " << demand[0] << ')' << endl;
+    res += C[0][0] * min(supply[0], demand[0]);
+
+    cout << endl;
+    cout << "Initial basic feasable solution: " << res << endl;
+    cout << endl;
 }
 
 bool russel_is_applicable()
@@ -107,7 +308,7 @@ bool russel_is_applicable()
     return true;
 }
 
-void run_russel(vector<int> supply, vector<int> demand)
+void run_russel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
 {
 
 }
@@ -187,7 +388,7 @@ int main()
         cout << "Warning: The solution obtained using this method may not be optimal." << endl;
     }
 
-    run_vogel(S, D);
+    run_vogel(S, D, C);
 
 
     cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
@@ -199,7 +400,7 @@ int main()
         cout << "Warning: The solution obtained using this method may not be optimal." << endl;
     }
 
-    run_russel(S, D);
+    run_russel(S, D, C);
 
     return 0;
 }
