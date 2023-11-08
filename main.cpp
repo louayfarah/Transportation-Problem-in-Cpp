@@ -141,7 +141,7 @@ vector<vector<int>> delete_column_from_matrix(vector<vector<int>> mat, int m)
             if(j == m)
                 continue;
 
-            temp.pb(C[i][j]);
+            temp.pb(mat[i][j]);
         }
 
         res.pb(temp);
@@ -150,23 +150,33 @@ vector<vector<int>> delete_column_from_matrix(vector<vector<int>> mat, int m)
     return res;
 }
 
-void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
+void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> coefs)
 {
     int res = 0;
 
-    while(!(int(C.size()) <= 1 && int(C[0].size()) <= 1))
+    while(!(int(coefs.size()) <= 1 && int(coefs[0].size()) <= 1))
     {
-        int n = int(C.size());
-        int m = int(C[0].size());
+        int n = int(coefs.size());
+        int m = int(coefs[0].size());
         cout << "The current cost coefficients are:" << endl;
         for(int i = 0; i<n; i++)
         {
             for(int j = 0; j<m; j++)
             {
-                cout << C[i][j] << ' ';
+                cout << coefs[i][j] << ' ';
             }
             cout << endl;
         }
+
+        cout << "The current supply:" << endl;
+        for(int i = 0; i<n; i++)
+            cout << supply[i] << ' ';
+        cout << endl;
+        cout << "The current demand:" << endl;
+        for(int j = 0; j<m; j++)
+            cout << demand[j] << ' ';
+        cout << endl;
+        
 
         vector<int> supply_penalty(n, 0);
         vector<int> demand_penalty(m, 0);
@@ -178,14 +188,14 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
 
             for(int j = 0; j<m; j++)
             {
-                if(C[i][j] < first_minimum)
-                    first_minimum = C[i][j];
+                if(coefs[i][j] < first_minimum)
+                    first_minimum = coefs[i][j];
             }
 
             for(int j = 0; j<m; j++)
             {
-                if(C[i][j] < second_minimum && C[i][j] > first_minimum)
-                    second_minimum = C[i][j];
+                if(coefs[i][j] < second_minimum && coefs[i][j] > first_minimum)
+                    second_minimum = coefs[i][j];
             }
 
             supply_penalty[i] = abs(first_minimum-second_minimum);
@@ -197,14 +207,14 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
 
             for(int i = 0; i<n; i++)
             {
-                if(C[i][j] < first_minimum)
-                    first_minimum = C[i][j];
+                if(coefs[i][j] < first_minimum)
+                    first_minimum = coefs[i][j];
             }
 
             for(int i = 0; i<n; i++)
             {
-                if(C[i][j] < second_minimum && C[i][j] > first_minimum)
-                    second_minimum = C[i][j];
+                if(coefs[i][j] < second_minimum && coefs[i][j] > first_minimum)
+                    second_minimum = coefs[i][j];
             }
 
             demand_penalty[j] = abs(first_minimum-second_minimum);
@@ -226,15 +236,18 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
 
         for(int i = 1; i<n; i++)
         {
-            if(supply_penalty[i] > maximum_supply_penalty)
+            if(supply_penalty[i] > supply_penalty[maximum_supply_penalty])
                 maximum_supply_penalty = i;
         }
 
         for(int j = 1; j<m; j++)
         {
-            if(demand_penalty[j] > maximum_demand_penalty)
+            if(demand_penalty[j] > demand_penalty[maximum_demand_penalty])
                 maximum_demand_penalty = j;
         }
+
+        cout << "Maximum row penalty is " << supply_penalty[maximum_supply_penalty] << " at index " << maximum_supply_penalty << endl;
+        cout << "Maximum column penalty is " << demand_penalty[maximum_demand_penalty] << " at index " << maximum_demand_penalty << endl;
 
         int mini_x, mini_y;
         if (supply_penalty[maximum_supply_penalty] >= demand_penalty[maximum_demand_penalty]) // the maximum penalty corresponds to the supplies (rows)
@@ -243,7 +256,7 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
             mini_y = 0;
             for(int j = 0; j<m; j++)
             {
-                if(C[mini_x][j] < C[mini_x][mini_y])
+                if(coefs[mini_x][j] < coefs[mini_x][mini_y])
                     mini_y = j;
             }
         }
@@ -253,13 +266,13 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
             mini_x = 0;
             for(int i = 0; i<n; i++)
             {
-                if(C[i][mini_y] < C[mini_x][mini_y])
+                if(coefs[i][mini_y] < coefs[mini_x][mini_y])
                     mini_x = i;
             }
         }
 
-        cout << "We add " << C[mini_x][mini_y] << " * min(" << supply[mini_x] << ", " << demand[mini_y] << ')' << endl;
-        res += C[mini_x][mini_y] * min(supply[mini_x], demand[mini_y]); 
+        cout << "We add " << coefs[mini_x][mini_y] << " * min(" << supply[mini_x] << ", " << demand[mini_y] << ')' << endl;
+        res += coefs[mini_x][mini_y] * min(supply[mini_x], demand[mini_y]); 
 
         if(supply[mini_x] < demand[mini_y])
         {
@@ -267,8 +280,8 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
             demand[mini_y] -= supply[mini_x];
             supply[mini_x] = 0;
             
-            S = delete_element_from_vector(S, mini_x);
-            C = delete_row_from_matrix(C, mini_x);
+            supply = delete_element_from_vector(supply, mini_x);
+            coefs = delete_row_from_matrix(coefs, mini_x);
         }
         else if(supply[mini_x] > demand[mini_y])
         {
@@ -276,8 +289,8 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
             supply[mini_x] -= demand[mini_y];
             demand[mini_y] = 0;
             
-            D = delete_element_from_vector(D, mini_y);
-            C = delete_column_from_matrix(C, mini_y);
+            demand = delete_element_from_vector(demand, mini_y);
+            coefs = delete_column_from_matrix(coefs, mini_y);
         }
         else
         {
@@ -285,18 +298,18 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
             supply[mini_x] = 0;
             demand[mini_y] = 0;
             
-            S = delete_element_from_vector(S, mini_x);
-            C = delete_row_from_matrix(C, mini_x);
-            D = delete_element_from_vector(D, mini_y);
-            C = delete_column_from_matrix(C, mini_y);
+            supply = delete_element_from_vector(supply, mini_x);
+            coefs = delete_row_from_matrix(coefs, mini_x);
+            demand = delete_element_from_vector(demand, mini_y);
+            coefs = delete_column_from_matrix(coefs, mini_y);
         }
 
         cout << endl;
     }
 
     cout << "Final addition:" << endl;
-    cout << "We add " << C[0][0] << " * min(" << supply[0] << ", " << demand[0] << ')' << endl;
-    res += C[0][0] * min(supply[0], demand[0]);
+    cout << "We add " << coefs[0][0] << " * min(" << supply[0] << ", " << demand[0] << ')' << endl;
+    res += coefs[0][0] * min(supply[0], demand[0]);
 
     cout << endl;
     cout << "Initial basic feasable solution: " << res << endl;
@@ -308,9 +321,133 @@ bool russel_is_applicable()
     return true;
 }
 
-void run_russel(vector<int> supply, vector<int> demand, vector<vector<int>> C)
+void run_russel(vector<int> supply, vector<int> demand, vector<vector<int>> coefs)
 {
+    int res = 0;
 
+    while(!(int(coefs.size()) <= 1 && int(coefs[0].size()) <= 1))
+    {
+        int n = int(coefs.size());
+        int m = int(coefs[0].size());
+        cout << "The current cost coefficients are:" << endl;
+        for(int i = 0; i<n; i++)
+        {
+            for(int j = 0; j<m; j++)
+            {
+                cout << coefs[i][j] << ' ';
+            }
+            cout << endl;
+        }
+
+        cout << "The current supply:" << endl;
+        for(int i = 0; i<n; i++)
+            cout << supply[i] << ' ';
+        cout << endl;
+        cout << "The current demand:" << endl;
+        for(int j = 0; j<m; j++)
+            cout << demand[j] << ' ';
+        cout << endl;
+
+        vector<int> U(n, -1); // Ui is the largest cost in supply (row) i
+        vector<int> V(m, -1); // Vj is the largest cost in demand (column) j
+
+        for(int i = 0; i<n; i++)
+        {
+            for(int j = 0; j<m; j++)
+            {
+                U[i] = max(U[i], coefs[i][j]);
+            }
+        }
+
+        for(int j = 0; j<m; j++)
+        {
+            for(int i = 0; i<n; i++)
+            {
+                V[j] = max(V[j], coefs[i][j]);
+            }
+        }
+
+        cout << "Current vector U:" << endl;
+        for(int i = 0; i<n; i++)
+            cout << U[i] << ' ';
+        cout << endl;
+
+        cout << "Current vector V:" << endl;
+        for(int j = 0; j<m; j++)
+            cout << V[j] << ' ';
+        cout << endl;
+        cout << endl;
+
+        cout << "Calculating the values of delta_ij for each i and j..."  << endl;
+        vector<vector<int>> delta(n, vector<int>(m, 0));
+        for(int i = 0; i<n; i++)  
+        {
+            for(int j = 0; j<m; j++)
+            {
+                delta[i][j] = coefs[i][j] - (U[i] + V[j]);
+            }
+        }
+
+        cout << "Searching for the variable having the most negative delta value..." << endl;
+        int mini_x = 0, mini_y = 0;
+        for(int i = 0; i<n; i++)
+        {
+            for(int j = 0; j<m; j++)
+            {
+                if(delta[i][j] < 0 && delta[i][j] < delta[mini_x][mini_y])
+                {
+                    mini_x = i;
+                    mini_y = j;
+                }
+            }
+        }
+        
+        cout << "The most negative delta value is " << delta[mini_x][mini_y] << " lying in position (" << mini_x+1 << ", " << mini_y+1 << ')' << endl;
+        cout << endl;
+
+        cout << "We add " << coefs[mini_x][mini_y] << " * min(" << supply[mini_x] << ", " << demand[mini_y] << ')' << endl;
+        res += coefs[mini_x][mini_y] * min(supply[mini_x], demand[mini_y]); 
+
+        if(supply[mini_x] < demand[mini_y])
+        {
+            print_supply_and_demand(supply[mini_x], demand[mini_y]);
+            demand[mini_y] -= supply[mini_x];
+            supply[mini_x] = 0;
+            
+            supply = delete_element_from_vector(supply, mini_x);
+            coefs = delete_row_from_matrix(coefs, mini_x);
+        }
+        else if(supply[mini_x] > demand[mini_y])
+        {
+            print_supply_and_demand(supply[mini_x], demand[mini_y]);
+            supply[mini_x] -= demand[mini_y];
+            demand[mini_y] = 0;
+            
+            demand = delete_element_from_vector(demand, mini_y);
+            coefs = delete_column_from_matrix(coefs, mini_y);
+        }
+        else
+        {
+            print_supply_and_demand(supply[mini_x], demand[mini_y]);
+            supply[mini_x] = 0;
+            demand[mini_y] = 0;
+            
+            supply = delete_element_from_vector(supply, mini_x);
+            coefs = delete_row_from_matrix(coefs, mini_x);
+            demand = delete_element_from_vector(demand, mini_y);
+            coefs = delete_column_from_matrix(coefs, mini_y);
+        }
+
+        cout << endl;
+    }
+
+    cout << "Final addition:" << endl;
+    cout << "We add " << coefs[0][0] << " * min(" << supply[0] << ", " << demand[0] << ')' << endl;
+    res += coefs[0][0] * min(supply[0], demand[0]);
+
+    cout << endl;
+    cout << "Initial basic feasable solution: " << res << endl;
+    cout << endl;
 }
 
 int main()
