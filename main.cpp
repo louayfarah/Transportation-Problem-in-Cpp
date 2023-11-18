@@ -29,9 +29,36 @@ bool transportation_problem_is_balanced()
     return (sum_sources_coefs == sum_destinations_coefs);
 }
 
+string tabbed(string s)
+{
+    string res = s;
+    while(int(res.size()) < 10)
+        res.pb(' ');
+
+    return res;
+}
+
 void construct_input_table()
 {
+    cout << tabbed("") << ' ' << tabbed("D1") << ' ' << tabbed("D2") << ' ' << tabbed("D3") << ' ' << tabbed("D4") << tabbed("Supply") << endl;
+    for(int i = 0; i<sources; i++)
+    {
+        string current_source = "S";
+        current_source.pb(char(i+1+'0'));
+        cout << tabbed(current_source) << ' ';
 
+        for(int j = 0; j<destinations; j++)
+        {
+            cout << tabbed(to_string(C[i][j])) << ' ';
+        }
+
+        cout << tabbed(to_string(S[i])) << endl;
+    }
+
+    cout << tabbed("Demand") << ' ';
+    for(int j = 0; j<destinations; j++)
+        cout << tabbed(to_string(D[j])) << ' ';
+    cout << endl;
 }
 
 void print_supply_and_demand(int a, int b)
@@ -246,8 +273,8 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> coefs
                 maximum_demand_penalty = j;
         }
 
-        cout << "Maximum row penalty is " << supply_penalty[maximum_supply_penalty] << " at index " << maximum_supply_penalty << endl;
-        cout << "Maximum column penalty is " << demand_penalty[maximum_demand_penalty] << " at index " << maximum_demand_penalty << endl;
+        cout << "Maximum row penalty is " << supply_penalty[maximum_supply_penalty] << " at index " << maximum_supply_penalty+1 << endl;
+        cout << "Maximum column penalty is " << demand_penalty[maximum_demand_penalty] << " at index " << maximum_demand_penalty+1 << endl;
 
         int mini_x, mini_y;
         if (supply_penalty[maximum_supply_penalty] >= demand_penalty[maximum_demand_penalty]) // the maximum penalty corresponds to the supplies (rows)
@@ -378,7 +405,7 @@ void run_russel(vector<int> supply, vector<int> demand, vector<vector<int>> coef
         cout << endl;
         cout << endl;
 
-        cout << "Calculating the values of delta_ij for each i and j..."  << endl;
+        cout << "Calculating the values of delta_ij for each i and j using the formula: delta_ij = c_ij - (U_i + V_j)..."  << endl;
         vector<vector<int>> delta(n, vector<int>(m, 0));
         for(int i = 0; i<n; i++)  
         {
@@ -500,10 +527,9 @@ int main()
         return 0;
     }
 
-    cout << "The problem is balanced. here is the input parameters table:" << endl;
+    cout << "The problem is balanced." << endl << "Here is the input parameters table:" << endl << endl;
     construct_input_table();
-    cout << endl << endl;
-
+    cout << endl;
     cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
     cout << "North-West corner method..." << endl << endl;
     if(!north_west_is_applicable())
