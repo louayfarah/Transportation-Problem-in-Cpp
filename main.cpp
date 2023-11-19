@@ -502,12 +502,6 @@ int main()
         cin >> S[i];
     }
 
-    cout << "Type " << destinations << " coefficients which constitute the vector of demand" << endl;
-    for(int j = 0; j<destinations; j++)
-    {
-        cin >> D[j];
-    }
-
     cout << "In each of the " << sources << " lines, type " << destinations << " coefficients corresponding to the matrix of costs:" << endl;
     for(int i = 0; i<sources; i++)
     {
@@ -515,6 +509,12 @@ int main()
         {
             cin >> C[i][j];
         }
+    }
+
+    cout << "Type " << destinations << " coefficients which constitute the vector of demand" << endl;
+    for(int j = 0; j<destinations; j++)
+    {
+        cin >> D[j];
     }
 
 
