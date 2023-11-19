@@ -18,8 +18,24 @@ vector<int> D; // Vector of coefficients of demand of size destinations
 vector<vector<int>> C; // Matrix of coefficients of costs of size [sources x destinations]
 
 
+bool is_applicable()
+{
+    // We check whether all coefficients are strictly positive
+    for(int i = 0; i<sources; i++)
+    {
+        for(int j = 0; j<destinations; j++)
+        {
+            if(C[i][j] <= 0)
+                return false;
+        }
+    }
+
+    return true;
+}
+
 bool transportation_problem_is_balanced()
 {
+    // We check whether the sum of sources is equal to the sum of destinations
     int sum_sources_coefs = 0, sum_destinations_coefs = 0;
     for(auto elt: S)
         sum_sources_coefs += elt;
@@ -65,11 +81,6 @@ void print_supply_and_demand(int a, int b)
 {
     cout << "Supply: " << a << " - " << min(a, b) << " = " << a - min(a, b) << endl;
     cout << "Demand: " << b << " - " << min(a, b) << " = " << b - min(a, b) << endl;  
-}
-
-bool north_west_is_applicable()
-{
-    return true;
 }
 
 void run_north_west(vector<int> supply, vector<int> demand)
@@ -119,11 +130,6 @@ void run_north_west(vector<int> supply, vector<int> demand)
     cout << endl;
 }
 
-bool vogel_is_applicable()
-{
-    return true;
-}
-
 vector<int> delete_element_from_vector(vector<int> v, int x)
 {
     vector<int> res;
@@ -154,7 +160,6 @@ vector<vector<int>> delete_row_from_matrix(vector<vector<int>> mat, int n)
 
     return res;
 }
-
 
 vector<vector<int>> delete_column_from_matrix(vector<vector<int>> mat, int m)
 {
@@ -343,11 +348,6 @@ void run_vogel(vector<int> supply, vector<int> demand, vector<vector<int>> coefs
     cout << endl;
 }
 
-bool russel_is_applicable()
-{
-    return true;
-}
-
 void run_russel(vector<int> supply, vector<int> demand, vector<vector<int>> coefs)
 {
     int res = 0;
@@ -519,6 +519,12 @@ int main()
 
 
     cout << "=========================================================================================================================" << endl;
+    cout << "Checking whether the methods are applicable on the given input..." << endl;
+    if(!is_applicable())
+    {
+        cout << "he method is not applicable!" << endl;
+        return 0;
+    }
     cout << "Checking whether the transportation problem is balanced..." << endl;
     
     if(!transportation_problem_is_balanced())
@@ -530,38 +536,22 @@ int main()
     cout << "The problem is balanced." << endl << "Here is the input parameters table:" << endl << endl;
     construct_input_table();
     cout << endl;
+
+
     cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
     cout << "North-West corner method..." << endl << endl;
-    if(!north_west_is_applicable())
-    {
-        cout << "The method is is not applicable!" << endl;
-        cout << "Explication: There are significant differences in the costs associated with different transportation routes." << endl;
-        cout << "Warning: The solution obtained using this method may not be optimal." << endl;
-    }
 
     run_north_west(S, D);
 
 
     cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
     cout << "Vogel's Approximation method..." << endl << endl;
-    if(!vogel_is_applicable())
-    {
-        cout << "The method is is not applicable!" << endl;
-        cout << "Explication: There are multiple routes with the same lowest cost." << endl;
-        cout << "Warning: The solution obtained using this method may not be optimal." << endl;
-    }
 
     run_vogel(S, D, C);
 
 
     cout << "------------------------------------------------------------------------------------------------------------------------" << endl;
     cout << "Russel's Approximation method..." << endl << endl;
-    if(!russel_is_applicable())
-    {
-        cout << "The method is is not applicable!" << endl;
-        cout << "Explication: The transportation costs are not significantly different between routes." << endl;
-        cout << "Warning: The solution obtained using this method may not be optimal." << endl;
-    }
 
     run_russel(S, D, C);
 
